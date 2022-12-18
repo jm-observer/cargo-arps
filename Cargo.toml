@@ -2,7 +2,7 @@
 name = "cargo-arps"
 version = "0.1.0"
 edition = "2021"
-description = "a arp tool"
+description = "a arp tool on windows"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
