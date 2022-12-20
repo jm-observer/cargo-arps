@@ -1,21 +1,32 @@
 mod arp;
+mod ping;
+
 use anyhow::{Result, bail};
 use clap::Parser;
 use pnet::datalink;
 use pnet::datalink::{NetworkInterface};
-use pnet::ipnetwork::{IpNetwork};
+use pnet::ipnetwork::{IpNetwork, Ipv4Network};
 use crate::arp::arp_scan;
+use crate::ping::ping_scan;
 
-fn main() -> Result<()> {
+#[tokio::main]
+async fn main() -> Result<()> {
     custom_utils::logger::logger_stdout_debug();
-    let command: Arp = Arp::parse();
+    let command: Command = Command::parse();
     // debug!("{:?}", command);
     println!();
     match command {
-        Arp::List => {filter_interface()}
-        Arp::Scan { index, mac , delay} => {
+        Command::List => {filter_interface()}
+        Command::Scan { index, mac , delay} => {
             let interface = get_interface(index)?;
             arp_scan(&interface, mac.map(|x| process_target_sub_mac(x)), delay)?;
+        }
+        Command::Ping {
+            index, ip
+        } => {
+            let interface = get_interface(index)?;
+            let from_cidr: Ipv4Network = "192.168.254.1/24".parse()?;
+            ping_scan(&interface, 2, from_cidr).await?;
         }
     }
     println!();
@@ -53,7 +64,7 @@ pub fn get_interface(index: u32) -> Result<NetworkInterface> {
 
 #[derive(Parser, Debug)]
 #[command(name="cargo-arp", version="0.1.0", about="a arp tool.")]
-pub enum Arp {
+pub enum Command {
     #[command(name="list", about="list these interface of network.")]
     List,
     #[command(name="scan", about="scan index of interface, and filter mac if present."
@@ -65,5 +76,11 @@ pub enum Arp {
         mac: Option<String>,
         #[arg(short, default_value="3000", help="Wait time for arp response, unit: ms.")]
         delay: u64,
+    },
+    Ping {
+        #[arg(help="index of interface.")]
+        index: u32,
+        #[arg(help="e.g. 192.168.199.0/24")]
+        ip: String,
     },
 }

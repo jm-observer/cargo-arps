@@ -49,6 +49,10 @@ pub fn arp_scan(
     while let Ok(ack) = tmp_rx.try_recv() {
         targets.insert(ack);
     }
+    let mut targets: Vec<ArpAck> = targets.into_iter().collect();
+    targets.sort_by(|x, y | {
+        x.ip.cmp(&y.ip)
+    });
     let mut aim_targets = HashSet::<ArpAck>::new();
     println!("all responses：");
     for target in targets {
