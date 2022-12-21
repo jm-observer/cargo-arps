@@ -22,11 +22,11 @@ async fn main() -> Result<()> {
             arp_scan(&interface, mac.map(|x| process_target_sub_mac(x)), delay)?;
         }
         Command::Ping {
-            index, ip
+            ip
         } => {
-            let interface = get_interface(index)?;
-            let from_cidr: Ipv4Network = "192.168.254.1/24".parse()?;
-            ping_scan(&interface, 2, from_cidr).await?;
+            // let interface = get_interface(index)?;
+            let from_cidr: Ipv4Network = ip.parse()?;
+            ping_scan(2, from_cidr).await?;
         }
     }
     println!();
@@ -65,9 +65,9 @@ pub fn get_interface(index: u32) -> Result<NetworkInterface> {
 #[derive(Parser, Debug)]
 #[command(name="cargo-arp", version="0.1.0", about="a arp tool.")]
 pub enum Command {
-    #[command(name="list", about="list these interface of network.")]
+    #[command(name="list", about="List interface of network.")]
     List,
-    #[command(name="scan", about="scan index of interface, and filter mac if present."
+    #[command(name="scan", about="Scan index of interface, and filter mac if present."
     , after_help="e.g., cargo-arp scan 8 d2:b5   \n\t cargo-arp scan 8\n\t cargo-arp scan 8 d2:b5 -d 3000.")]
     Scan {
         #[arg(help="index of interface.")]
@@ -77,9 +77,10 @@ pub enum Command {
         #[arg(short, default_value="3000", help="Wait time for arp response, unit: ms.")]
         delay: u64,
     },
+    #[command(name="ping", about="Ping network segment.")]
     Ping {
-        #[arg(help="index of interface.")]
-        index: u32,
+        // #[arg(help="index of interface.")]
+        // index: u32,
         #[arg(help="e.g. 192.168.199.0/24")]
         ip: String,
     },

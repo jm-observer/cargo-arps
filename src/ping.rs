@@ -1,31 +1,27 @@
-use std::collections::HashSet;
-use anyhow::{anyhow, bail, Result};
-use log::{error, warn};
-use pnet::ipnetwork::{IpNetwork, Ipv4Network};
-use std::net::{IpAddr, Ipv4Addr, SocketAddrV4};
+use anyhow::{Result};
+use pnet::ipnetwork::{Ipv4Network};
+use std::net::{IpAddr};
 
 use std::time::Duration;
-use pnet::datalink::NetworkInterface;
 use rand::random;
 use surge_ping::{Client, IcmpPacket, PingIdentifier, PingSequence};
 
 const PAYLOAD: [u8; 56] = [0; 56];
 
 pub async fn ping_scan(
-    interface: &NetworkInterface,
+    // interface: &NetworkInterface,
     delay: u64,
     targets: Ipv4Network
 ) -> Result<()> {
-    let ipv4_network = match interface.ips.get(0) {
-        Some(IpNetwork::V4(ip)) => {
-            ip.clone()
-        },
-        _ => {
-            bail!("none ipv4")
-        }
-    };
-    let socket_addr = SocketAddrV4::new(ipv4_network.ip(), 0);
-    // let config = surge_ping::Config::builder().bind(socket_addr.into()).build();
+    // let ipv4_network = match interface.ips.get(0) {
+    //     Some(IpNetwork::V4(ip)) => {
+    //         ip.clone()
+    //     },
+    //     _ => {
+    //         bail!("none ipv4")
+    //     }
+    // };
+    // let socket_addr = SocketAddrV4::new(ipv4_network.ip(), 0);
     let config = surge_ping::Config::builder().build();
     let client = Client::new(&config).unwrap();
     let mut handlers = Vec::new();
@@ -41,7 +37,7 @@ pub async fn ping_scan(
     for handler in handlers {
         match handler.await? {
                 Ok((IcmpPacket::V4(packet), rtt)) => {
-                    println!("{:?} {:0.2?}", packet.get_source(), rtt);
+                    println!("{:?} {:?}", packet.get_source(), rtt);
                 }
                 _ => {},
             }

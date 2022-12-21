@@ -6,6 +6,7 @@ X86_IMAGE = "messense/rust-musl-cross:x86_64-musl"
 env = { "C_APP" = "cargo-arps"}
 script = '''
 cargo build --no-default-features --release
+del .\\target\\%C_APP%.exe
 upx.exe --best --lzma -o ./target/%C_APP%.exe ./target/release/%C_APP%.exe
 '''
 
