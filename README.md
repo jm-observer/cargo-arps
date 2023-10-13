@@ -1,5 +1,7 @@
 # cargo-arps
 
+you should install [winpcap](https://www.winpcap.org/) on windows and download [WinPcap Developer's Pack](https://www.winpcap.org/devel.htm), then set env %LIB%, e.g: LIB=C:\Downloads\WpdPack\Lib\x64.
+
 ```
 PS D:\git\cargo-arp> cargo-arps list
 

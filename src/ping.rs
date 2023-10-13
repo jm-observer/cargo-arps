@@ -1,9 +1,9 @@
-use anyhow::{Result};
-use pnet::ipnetwork::{Ipv4Network};
-use std::net::{IpAddr};
+use anyhow::Result;
+use pnet::ipnetwork::Ipv4Network;
+use std::net::IpAddr;
 
-use std::time::Duration;
 use rand::random;
+use std::time::Duration;
 use surge_ping::{Client, IcmpPacket, PingIdentifier, PingSequence};
 
 const PAYLOAD: [u8; 56] = [0; 56];
@@ -11,7 +11,7 @@ const PAYLOAD: [u8; 56] = [0; 56];
 pub async fn ping_scan(
     // interface: &NetworkInterface,
     delay: u64,
-    targets: Ipv4Network
+    targets: Ipv4Network,
 ) -> Result<()> {
     // let ipv4_network = match interface.ips.get(0) {
     //     Some(IpNetwork::V4(ip)) => {
@@ -36,11 +36,11 @@ pub async fn ping_scan(
     }
     for handler in handlers {
         match handler.await? {
-                Ok((IcmpPacket::V4(packet), rtt)) => {
-                    println!("{:?} {:?}", packet.get_source(), rtt);
-                }
-                _ => {},
+            Ok((IcmpPacket::V4(packet), rtt)) => {
+                println!("{:<15 }\t{:<6 }", packet.get_source(), format!("{:?}", rtt));
             }
+            _ => {}
+        }
     }
     Ok(())
 }

@@ -1,31 +1,42 @@
-use std::collections::HashSet;
 use anyhow::{anyhow, bail, Result};
 use log::{error, warn};
 use pnet::datalink::{Config, DataLinkReceiver, DataLinkSender, MacAddr, NetworkInterface};
-use pnet::packet::arp::{ArpHardwareTypes, ArpOperations, MutableArpPacket, ArpPacket};
+use pnet::ipnetwork::IpNetwork;
+use pnet::packet::arp::{ArpHardwareTypes, ArpOperations, ArpPacket, MutableArpPacket};
 use pnet::packet::MutablePacket;
-use pnet::ipnetwork::{IpNetwork};
+use serde::{Deserialize, Serialize};
+use std::collections::HashSet;
 use std::io::ErrorKind;
 use std::net::Ipv4Addr;
-use serde::{Deserialize, Serialize};
 
+use pnet::datalink;
+use pnet::datalink::Channel::Ethernet;
 use pnet::packet::ethernet::{EtherTypes, MutableEthernetPacket};
 use std::sync::mpsc::{channel, Sender};
 use std::thread;
 use std::time::Duration;
-use pnet::datalink;
-use pnet::datalink::Channel::Ethernet;
 
 pub fn arp_scan(
     interface: &NetworkInterface,
     target_sub_mac: Option<String>,
-    delay: u64
+    delay: u64,
+    order_by_mac: bool,
 ) -> Result<()> {
-    let (ipv4_network, src) = match (interface.ips.get(0), &interface.mac, ) {
+    let (ipv4_network, src) = match (interface.ips.get(0), &interface.mac) {
         (Some(IpNetwork::V4(ip)), Some(mac)) => {
+            println!("scan interface:");
+            println!(
+                "\tindex: {:2},\t{}, {:?}, {:?}",
+                interface.index,
+                interface.description,
+                ip.ip(),
+                mac
+            );
+            println!();
             (ip.clone(), mac.clone())
-        },
+        }
         _ => {
+            println!("none ipv4 or none mac");
             bail!("none ipv4 or none mac")
         }
     };
@@ -50,9 +61,11 @@ pub fn arp_scan(
         targets.insert(ack);
     }
     let mut targets: Vec<ArpAck> = targets.into_iter().collect();
-    targets.sort_by(|x, y | {
-        x.ip.cmp(&y.ip)
-    });
+    if order_by_mac {
+        targets.sort_by(|x, y| x.mac.cmp(&y.mac));
+    } else {
+        targets.sort_by(|x, y| x.ip.cmp(&y.ip));
+    }
     let mut aim_targets = HashSet::<ArpAck>::new();
     println!("all responses：");
     for target in targets {
@@ -75,11 +88,7 @@ pub fn arp_scan(
 }
 
 /// 收集识别的回复包
-fn collect_arp_response(
-    mut rx: Box<dyn DataLinkReceiver>,
-    sender: Sender<ArpAck>,
-    name: String,
-) {
+fn collect_arp_response(mut rx: Box<dyn DataLinkReceiver>, sender: Sender<ArpAck>, name: String) {
     loop {
         match rx.next() {
             Ok(packet) => {
