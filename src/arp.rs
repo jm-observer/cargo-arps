@@ -21,6 +21,7 @@ pub fn arp_scan(
     target_sub_mac: Option<String>,
     delay: u64,
     order_by_mac: bool,
+    clearly: bool,
 ) -> Result<()> {
     let (ipv4_network, src) = match (interface.ips.get(0), &interface.mac) {
         (Some(IpNetwork::V4(ip)), Some(mac)) => {
@@ -67,16 +68,17 @@ pub fn arp_scan(
         targets.sort_by(|x, y| x.ip.cmp(&y.ip));
     }
     let mut aim_targets = HashSet::<ArpAck>::new();
-    println!("all responses：");
-    for target in targets {
-        println!("\t{}  {}", target.mac, target.ip);
-        if let Some(ref sub_mac) = target_sub_mac {
-            if target.mac.to_uppercase().contains(sub_mac) {
-                aim_targets.insert(target);
+    if !clearly {
+        println!("all responses：");
+        for target in targets {
+            println!("\t{}  {}", target.mac, target.ip);
+            if let Some(ref sub_mac) = target_sub_mac {
+                if target.mac.to_uppercase().contains(sub_mac) {
+                    aim_targets.insert(target);
+                }
             }
         }
     }
-
     if target_sub_mac.is_some() {
         println!("filter result：");
         for target in aim_targets {

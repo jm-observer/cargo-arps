@@ -1,12 +1,13 @@
 [package]
 name = "cargo-arps"
-version = "0.2.0"
+version = "0.3.0"
 edition = "2021"
 description = "a arp tool on windows"
 license-file = "LICENSE"
 repository = "https://github.com/jm-observer/cargo-arps.git"
 readme = "README.md"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+include = ["/Packet.lib"]
 
 [dependencies]
 anyhow = "1.0.66"
@@ -17,5 +18,4 @@ serde = { version = "1.0", features = ["derive"]}
 clap = { version = "4.0.29", features = ["derive"]}
 surge-ping = "0.8.0"
 tokio = {version = "1.23.0", features = ["net", "macros", "rt-multi-thread", "rt"]}
-[dependencies.rand]
-version = "0.8.5"
+rand = "0.8.5"

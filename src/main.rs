@@ -22,6 +22,7 @@ async fn main() -> Result<()> {
             mac,
             mac_order,
             delay,
+            clearly,
         } => {
             let interface = get_interface(index)?;
             arp_scan(
@@ -29,8 +30,10 @@ async fn main() -> Result<()> {
                 mac.map(|x| process_target_sub_mac(x)),
                 delay,
                 mac_order,
+                clearly,
             )?;
         }
+
         Command::Ping { ip } => {
             // let interface = get_interface(index)?;
             let from_cidr: Ipv4Network = ip.parse()?;
@@ -103,6 +106,13 @@ pub enum Command {
             help = "order result by mac, default by ip"
         )]
         mac_order: bool,
+        #[arg(
+            short,
+            long,
+            default_value = "false",
+            help = "decide to display result's scan"
+        )]
+        clearly: bool,
     },
     #[command(name = "ping", about = "Ping network segment.")]
     Ping {
