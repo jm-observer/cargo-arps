@@ -7,7 +7,7 @@ license-file = "LICENSE"
 repository = "https://github.com/jm-observer/cargo-arps.git"
 readme = "README.md"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-include = ["/Packet.lib"]
+include = ["/Packet.lib", "src", "Cargo.toml", "LICENSE", "README.md"]
 
 [dependencies]
 anyhow = "1.0.66"
@@ -19,3 +19,7 @@ clap = { version = "4.0.29", features = ["derive"]}
 surge-ping = "0.8.0"
 tokio = {version = "1.23.0", features = ["net", "macros", "rt-multi-thread", "rt"]}
 rand = "0.8.5"
+
+#[[bin]]
+#name = "cargo-arps"
+#path = "src/main.rs"
