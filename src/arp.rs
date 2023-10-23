@@ -14,6 +14,7 @@ use pnet::datalink::Channel::Ethernet;
 use pnet::packet::ethernet::{EtherTypes, MutableEthernetPacket};
 use std::sync::mpsc::{channel, Sender};
 use std::thread;
+use std::thread::sleep;
 use std::time::Duration;
 
 pub fn arp_scan(
@@ -54,6 +55,7 @@ pub fn arp_scan(
         if let Some(Err(e)) = tx.send_to(&arp_packet, Some(interface.clone())) {
             bail!("error: {:?}", e);
         }
+        sleep(Duration::from_millis(10));
     }
     println!("request sended, listening response……");
     thread::sleep(Duration::from_millis(delay));
@@ -70,12 +72,14 @@ pub fn arp_scan(
     let mut aim_targets = HashSet::<ArpAck>::new();
     if !clearly {
         println!("all responses：");
-        for target in targets {
+    }
+    for target in targets {
+        if !clearly {
             println!("\t{}  {}", target.mac, target.ip);
-            if let Some(ref sub_mac) = target_sub_mac {
-                if target.mac.to_uppercase().contains(sub_mac) {
-                    aim_targets.insert(target);
-                }
+        }
+        if let Some(ref sub_mac) = target_sub_mac {
+            if target.mac.to_uppercase().contains(sub_mac) {
+                aim_targets.insert(target);
             }
         }
     }
