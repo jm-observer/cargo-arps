@@ -19,7 +19,7 @@ async fn main() -> Result<()> {
         Command::List => filter_interface(),
         Command::Scan {
             index,
-            mac,
+            mac_or_ip: mac,
             mac_order,
             delay,
             clearly,
@@ -92,8 +92,8 @@ pub enum Command {
     Scan {
         #[arg(help = "index of interface.")]
         index: u32,
-        #[arg(help = "mac to filter, don't want to be complete.")]
-        mac: Option<String>,
+        #[arg(help = "mac/ip to filter, don't want to be complete.")]
+        mac_or_ip: Option<String>,
         #[arg(
             short,
             default_value = "3000",

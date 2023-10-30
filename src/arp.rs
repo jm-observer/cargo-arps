@@ -19,7 +19,7 @@ use std::time::Duration;
 
 pub fn arp_scan(
     interface: &NetworkInterface,
-    target_sub_mac: Option<String>,
+    target_mac_or_ip: Option<String>,
     delay: u64,
     order_by_mac: bool,
     clearly: bool,
@@ -77,13 +77,15 @@ pub fn arp_scan(
         if !clearly {
             println!("\t{}  {}", target.mac, target.ip);
         }
-        if let Some(ref sub_mac) = target_sub_mac {
-            if target.mac.to_uppercase().contains(sub_mac) {
+        if let Some(ref target_mac_or_ip) = target_mac_or_ip {
+            if target.mac.to_uppercase().contains(target_mac_or_ip)
+                || target.ip.to_uppercase().contains(target_mac_or_ip)
+            {
                 aim_targets.insert(target);
             }
         }
     }
-    if target_sub_mac.is_some() {
+    if target_mac_or_ip.is_some() {
         println!("filter result：");
         for target in aim_targets {
             println!("\t{}  {}", target.mac, target.ip);
@@ -111,7 +113,7 @@ fn collect_arp_response(mut rx: Box<dyn DataLinkReceiver>, sender: Sender<ArpAck
 
                         if let Err(e) = sender.send(ArpAck {
                             mac: sender_mac.to_string(),
-                            ip: sender_ipv4,
+                            ip: sender_ipv4.to_string(),
                         }) {
                             error!("sende error: {:?}", e);
                         }
@@ -134,7 +136,7 @@ fn collect_arp_response(mut rx: Box<dyn DataLinkReceiver>, sender: Sender<ArpAck
 #[derive(Debug, Deserialize, Serialize, Eq, Hash, PartialEq)]
 pub struct ArpAck {
     pub(crate) mac: String,
-    pub(crate) ip: Ipv4Addr,
+    pub(crate) ip: String,
 }
 
 pub fn init_arp_packet(
